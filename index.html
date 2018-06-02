@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>文字粒子动画</title>
+</head>
+<body>
+  <canvas height="300" width="500" id="canvas"></canvas>
+  <input type="text" id="text" value="hello">
+  <button id="btn" onclick="submit()">开始</button>
+</body>
+<script>
+
+var particle=(function(){
+  var canvas=document.getElementById('canvas');
+  var ctx=canvas.getContext('2d');
+  var w=canvas.width;
+  var h=canvas.height;
+  ctx.fillStyle='#eee';
+  ctx.fillRect(0,0,w,h);
+  var dots=[];
+  var times=5;
+  var curPos=0;
+  var speed=50;
+  var Dot=function(x,y,rx,ry,z,r){
+    this.x=x;
+    this.y=y;
+    this.rx=rx;
+    this.ry=ry;
+    this.z=z;
+  }
+  var initDots=function(){
+    curPos=0;
+    dots=[];
+    ctx.clearRect(0,0,w,h);
+    ctx.font='100px YaHei';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    var text=document.getElementById('text').value;
+    ctx.fillText(text,w/2,h/2);
+    var imgData=ctx.getImageData(0,0,w,h);
+    var data=imgData.data;
+    for(var x=0;x<w;x+=5){
+      for(var y=0;y<h;y+=5){
+        var i=4*(y*w+x);
+        if(data[i+3]){
+          var rx=Math.random()*w;
+          var ry=Math.random()*h;
+          var z=(Math.abs(x-rx)+Math.abs(y-ry))/((w+h)/2)*times+0.8;
+          var dot=new Dot(x,y,rx,ry,z);
+          dots.push(dot);
+        }
+      }
+    }
+    //console.log(dots)
+  }
+  //initDots();
+  var animate=function(direction){
+    //console.log(direction)
+    ctx.fillStyle='#eee';
+    ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='#000';
+    ctx.beginPath();
+    dots.forEach(function(el,index){
+      var curX=direction?el.rx+(el.x-el.rx)/speed*curPos:el.x+(el.rx-el.x)/speed*curPos;
+      var curY=direction?el.ry+(el.y-el.ry)/speed*curPos:el.y+(el.ry-el.y)/speed*curPos;
+      var r=direction?el.z-(el.z-1)/speed*curPos:1+(el.z-1)/speed*curPos;
+      //ctx.fillStyle='rgba(0,0,0,'+(el.z>3?1:0.5)+')';
+      ctx.moveTo(curX,curY)
+      ctx.arc(curX,curY,r*2,0,2*Math.PI,false)
+    })
+    ctx.fill();
+    if(curPos==speed){
+      return;
+    }
+    curPos++;
+    if(direction==0&&curPos==speed){
+      curPos=0;
+      direction=1;
+    }
+    requestAnimationFrame(()=>animate(direction))
+  }
+  return {
+    animate:animate,
+    initDots:initDots
+  };
+})();
+function submit(){
+  particle.initDots();
+  particle.animate(0);
+}
+
+console.log(1==2||2==2)
+</script>
+</html>
